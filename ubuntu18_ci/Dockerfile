@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 MAINTAINER simon987 <me@simon987.net>
 
@@ -9,13 +9,10 @@ RUN apt install -y git pkg-config libglib2.0-dev\
         libbz2-dev yasm libharfbuzz-dev ragel libarchive-dev \
 		automake autotools-dev libopenjp2-7-dev wget libtool \
 		libxml2-dev python3 python3-dev libtiff-dev \
-		libpango1.0-dev && apt clean
-
-RUN wget https://github.com/gohugoio/hugo/releases/download/v0.62.1/hugo_0.62.1_Linux-64bit.deb &&\
-	dpkg -i hugo*.deb && rm hugo*.deb
+		libpango1.0-dev libasan4 && apt clean
 
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.16.2/cmake-3.16.2.tar.gz && \
 	tar -xzf cmake-*.tar.gz && cd cmake-* && ./bootstrap && make -j 4 && make install
-RUN git clone "https://github.com/danbloomberg/leptonica" && mkdir leptonica/build && cd leptonica/build && cmake -DCMAKE_C_FLAGS="-fPIC" .. && make -j 4 && make install && rm -rf cmake-* leptonica
+RUN git clone "https://github.com/danbloomberg/leptonica" && mkdir leptonica/build && cd leptonica/build && cmake -DCMAKE_C_FLAGS="-fPIC" .. && make -j 4 && make install && rm -rf /cmake-* /leptonica
 
 RUN git clone "https://github.com/glennrp/libpng" && cd libpng && CFLAGS="-fPIC" ./configure --enable-static && make -j 4 && make install
