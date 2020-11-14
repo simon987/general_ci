@@ -2,20 +2,24 @@ FROM ubuntu:16.04
 
 MAINTAINER simon987 <me@simon987.net>
 
-RUN apt update
-RUN apt install -y git pkg-config libglib2.0-dev\
-        libssl-dev uuid-dev python3 libmagic-dev \
-		libfreetype6-dev libcurl4-gnutls-dev \
-        libbz2-dev yasm libharfbuzz-dev ragel libarchive-dev \
-		automake autotools-dev libopenjp2-7-dev wget libtool \
-		libxml2-dev python3 python3-dev libtiff-dev \
-		libpango1.0-dev && apt clean
+RUN apt  update
+RUN apt install -y software-properties-common && add-apt-repository ppa:ubuntu-toolchain-r/test -y
+RUN apt update && apt install -y gcc-7 g++-7 && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
 
-RUN wget https://github.com/gohugoio/hugo/releases/download/v0.62.1/hugo_0.62.1_Linux-64bit.deb &&\
-	dpkg -i hugo*.deb && rm hugo*.deb
+RUN apt install -y pkg-config python3 yasm ragel \
+        automake autotools-dev wget libtool libssl-dev\
+        curl zip unzip tar xorg-dev libglu1-mesa-dev libxcursor-dev\
+        libxml2-dev libxinerama-dev libcurl4-openssl-dev gettext\
+        && apt clean
+
+RUN wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.26.2.tar.gz && \
+	tar -xzf git-*.tar.gz && cd git-* && make -j33 prefix=/usr/local all && make prefix=/usr/local install
 
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.16.2/cmake-3.16.2.tar.gz && \
-	tar -xzf cmake-*.tar.gz && cd cmake-* && ./bootstrap && make -j 4 && make install
-RUN git clone "https://github.com/danbloomberg/leptonica" && mkdir leptonica/build && cd leptonica/build && cmake -DCMAKE_C_FLAGS="-fPIC" .. && make -j 4 && make install && rm -rf cmake-* leptonica
+    tar -xzf cmake-*.tar.gz && cd cmake-* && ./bootstrap && make -j33 && make install
 
-RUN git clone "https://github.com/glennrp/libpng" && cd libpng && CFLAGS="-fPIC" ./configure --enable-static && make -j 4 && make install
+RUN git clone --branch fix   --depth 1 https://github.com/simon987/vcpkg.git && cd vcpkg && ./bootstrap-vcpkg.sh
+RUN ./vcpkg/vcpkg install curl[core,ssl]
+RUN ./vcpkg/vcpkg install lmdb cjson glib brotli libarchive[core,bzip2,libxml2,lz4,lzma,lzo] pthread tesseract libxml2 ffmpeg libmupdf gtest mongoose libuuid libmagic libraw jasper lcms
+RUN ./vcpkg/vcpkg install gumbo
+
